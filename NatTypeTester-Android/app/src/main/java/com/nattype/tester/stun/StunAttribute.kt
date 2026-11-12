@@ -104,14 +104,14 @@ object StunAttributeBuilder {
     }
 
     /**
-     * 构建 CHANGE-REQUEST 属性 (RFC 5780, 类型 0x8030)
-     * 使用 RFC 5780 的 comprehension-optional 范围属性，兼容 RFC 5389 服务器
+     * 构建 CHANGE-REQUEST 属性（RFC 3489 / 5780 标准类型 0x0003）
+     * RFC 5780 沿用 0x0003，位含义：0x04 改变 IP、0x02 改变端口
      */
     fun buildChangeRequest(changeIp: Boolean, changePort: Boolean): StunAttribute {
         val value = ByteArray(4)
         if (changeIp) value[3] = (value[3].toInt() or 0x04).toByte()
         if (changePort) value[3] = (value[3].toInt() or 0x02).toByte()
-        return StunAttribute(StunAttributeType.CHANGE_REQUEST_5780, value)
+        return StunAttribute(StunAttributeType.CHANGE_REQUEST, value)
     }
 
     /**

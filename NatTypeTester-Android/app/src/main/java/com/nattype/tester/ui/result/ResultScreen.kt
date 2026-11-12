@@ -443,6 +443,7 @@ private fun NatTypeResultCard(natType: NatType) {
         NatType.SYMMETRIC -> Pair(Color(0xFFF44336), Icons.Default.Lock)
         NatType.UDP_BLOCKED -> Pair(Color(0xFF9E9E9E), Icons.Default.Block)
         NatType.OTHER -> Pair(Color(0xFF78909C), Icons.Default.Info)
+        NatType.CONE_UNDETERMINED -> Pair(Color(0xFF29B6F6), Icons.Default.Info)
         NatType.UNKNOWN -> Pair(Color(0xFF607D8B), Icons.AutoMirrored.Filled.Help)
     }
 

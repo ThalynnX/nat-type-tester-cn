@@ -38,7 +38,7 @@ class NatChecker(
             // === 测试 I: 基础 UDP 连通性检测 ===
             logs.add("\n--- 测试 I: UDP 连通性检测 ---")
             primarySocket = DatagramSocket()
-            logs.add("本地端点: ${primarySocket.localAddress}:${primarySocket.localPort}")
+            logs.add("本地端点: ${fmtAddr(primarySocket.localAddress)}")
 
             val testResult1 = queryConsistent("UDP连通性", logs,
                 maxRetries = 5, requiredMatches = 2, intervalMs = 1000
@@ -57,13 +57,13 @@ class NatChecker(
                 )
             }
             logs.add("✅ UDP 连通性正常")
-            logs.add("映射地址: ${testResult1.publicAddress}")
+            logs.add("映射地址: ${fmtAddr(testResult1.publicAddress)}")
 
             val mappedAddress1 = testResult1.publicAddress!!
             val otherAddress = testResult1.otherAddress
             val responseOrigin = testResult1.responseOrigin
-            logs.add("响应来源: $responseOrigin")
-            logs.add("其他地址: $otherAddress")
+            logs.add("响应来源: ${fmtAddr(responseOrigin)}")
+            logs.add("其他地址: ${fmtAddr(otherAddress)}")
 
             // === 测试 II: 映射行为检测 ===
             logs.add("\n--- 测试 II: 映射行为检测 ---")
@@ -91,14 +91,14 @@ class NatChecker(
                 if (serverAddr.address.hostAddress == primaryServer.address.hostAddress &&
                     serverAddr.port == primaryServer.port) continue
 
-                logs.add("测试地址 ${index + 1}: $serverAddr")
+                logs.add("测试地址 ${index + 1}: ${fmtAddr(serverAddr)}")
                 val result = queryConsistent("映射-目标${index + 1}", logs,
                     maxRetries = 4, requiredMatches = 2, intervalMs = 800
                 ) {
                     udpClient.query(primarySocket!!, serverAddr, timeoutMs)
                 }
                 if (result != null && result.publicAddress != null) {
-                    logs.add("  映射地址: ${result.publicAddress}")
+                    logs.add("  映射地址: ${fmtAddr(result.publicAddress)}")
                     mappedAddresses.add(result.publicAddress)
                 } else {
                     logs.add("  ❌ 测试失败：无法获得一致映射结果")
@@ -299,13 +299,14 @@ class NatChecker(
         otherAddress: InetSocketAddress?,
         logs: MutableList<String>
     ): FilteringBehavior {
-        logs.add("主服务器地址: ${primaryServer.address.hostAddress}:${primaryServer.port}")
+        logs.add("主服务器地址: ${fmtAddr(primaryServer)}")
         if (otherAddress != null) {
-            logs.add("备用服务器地址: ${otherAddress.address.hostAddress}:${otherAddress.port}")
+            logs.add("备用服务器地址: ${fmtAddr(otherAddress)}")
         }
 
         // 为过滤测试创建专用 Socket，复用同一本地端点确保 NAT 映射一致
         val filterSocket = DatagramSocket()
+        var changeRequestHonored = false
         logs.add("过滤测试本地端口: ${filterSocket.localPort}")
 
         try {
@@ -323,6 +324,10 @@ class NatChecker(
                 result1.responseOrigin != null &&
                 result1.responseOrigin.address.hostAddress == otherAddress.address.hostAddress
 
+            if (result1 != null && result1.responseOrigin != null &&
+                result1.responseOrigin.address.hostAddress != primaryServer.address.hostAddress) {
+                changeRequestHonored = true
+            }
             if (respondedFromAlternateIp) {
                 logs.add("  ✅ 收到备用地址的回复 → 端点无关过滤 (EIF)")
                 return FilteringBehavior.ENDPOINT_INDEPENDENT
@@ -353,6 +358,9 @@ class NatChecker(
                 result2.responseOrigin.port != primaryServer.port
 
             if (respondedFromAlternatePort) {
+                changeRequestHonored = true
+            }
+            if (respondedFromAlternatePort) {
                 logs.add("  ✅ 收到主IP不同端口回复 → 地址相关过滤 (ADF)")
                 return FilteringBehavior.ADDRESS_DEPENDENT
             } else if (result2 != null) {
@@ -367,10 +375,35 @@ class NatChecker(
                 logs.add("  ❌ 查询无一致结果")
             }
 
-            logs.add("\n→ 最终判定: 地址和端口相关过滤 (APDF)")
-            return FilteringBehavior.ADDRESS_AND_PORT_DEPENDENT
+            if (changeRequestHonored) {
+                logs.add("\n→ 最终判定: 地址和端口相关过滤 (APDF)")
+                return FilteringBehavior.ADDRESS_AND_PORT_DEPENDENT
+            } else {
+                logs.add("\n→ 服务器未响应变更请求，过滤行为无法判定（不按 APDF 猜测）")
+                return FilteringBehavior.UNKNOWN
+            }
         } finally {
             try { filterSocket.close() } catch (_: Exception) {}
         }
+    }
+
+    /** 统一地址显示：去掉 "/" 前缀，IPv6 加方括号 */
+    private fun fmtAddr(addr: Any?): String {
+        if (addr == null) return "无"
+        val host: String
+        val port: Int?
+        when (addr) {
+            is InetSocketAddress -> {
+                host = addr.address?.hostAddress ?: addr.hostString
+                port = addr.port
+            }
+            is InetAddress -> {
+                host = addr.hostAddress ?: addr.toString()
+                port = null
+            }
+            else -> return addr.toString().removePrefix("/")
+        }
+        val shown = if (host.contains(":")) "[$host]" else host
+        return if (port != null) "$shown:$port" else shown
     }
 }

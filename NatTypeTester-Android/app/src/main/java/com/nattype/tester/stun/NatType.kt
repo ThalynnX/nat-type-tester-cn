@@ -65,6 +65,11 @@ enum class NatType(
         "无法判断 NAT 类型",
         MappingBehavior.UNKNOWN, FilteringBehavior.UNKNOWN
     ),
+    CONE_UNDETERMINED(
+        "锥形 NAT（过滤未判定）", "锥形 NAT（过滤未判定）", "Cone NAT (filtering unjudged)",
+        "映射为端点无关，但当前 STUN 服务器未响应变更请求，无法区分全锥形/受限锥形/端口受限锥形；请改用支持 RFC 5780 的服务器复测",
+        MappingBehavior.ENDPOINT_INDEPENDENT, FilteringBehavior.UNKNOWN
+    ),
     OTHER(
         "其他类型", "其他类型", "Other",
         "当前网络的映射行为和过滤行为不在传统协议 RFC 3489 的定义中",
@@ -89,7 +94,10 @@ enum class NatType(
          */
         fun classify(mapping: MappingBehavior, filtering: FilteringBehavior): NatType {
             return when {
-                mapping == MappingBehavior.UNKNOWN || filtering == FilteringBehavior.UNKNOWN -> UNKNOWN
+                mapping == MappingBehavior.UNKNOWN && filtering == FilteringBehavior.UNKNOWN -> UNKNOWN
+                // 映射已知但过滤无法判定：给出可解释的中间结论，不猜测过滤
+                mapping == MappingBehavior.ENDPOINT_INDEPENDENT && filtering == FilteringBehavior.UNKNOWN -> CONE_UNDETERMINED
+                filtering == FilteringBehavior.UNKNOWN -> UNKNOWN
                 // EIM 系列
                 mapping == MappingBehavior.ENDPOINT_INDEPENDENT && filtering == FilteringBehavior.ENDPOINT_INDEPENDENT -> FULL_CONE
                 mapping == MappingBehavior.ENDPOINT_INDEPENDENT && filtering == FilteringBehavior.ADDRESS_DEPENDENT -> RESTRICTED_CONE
