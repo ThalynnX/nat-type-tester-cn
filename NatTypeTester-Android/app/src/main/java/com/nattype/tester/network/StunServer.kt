@@ -42,8 +42,12 @@ data class StunServer(
          */
         val DEFAULT_SERVERS = listOf(
             StunServer("stun.miwifi.com", 3478, "小米"),
-            StunServer("stun.l.google.com", 19302, "Google (Primary)"),
+            StunServer("stun.chat.bilibili.com", 3478, "哔哩哔哩"),
+            StunServer("stun.hitv.com", 3478, "芒果TV"),
+            StunServer("stun.l.google.com", 19302, "谷歌"),
+            StunServer("stun1.l.google.com", 19302, "谷歌备用"),
             StunServer("stun.cloudflare.com", 3478, "Cloudflare"),
+            StunServer("stun.nextcloud.com", 443, "Nextcloud"),
         )
 
         /**

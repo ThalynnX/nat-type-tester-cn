@@ -60,6 +60,23 @@ keyPassword=你的密码
 
 `cn.jiuyuewl.nattype`（与上游 `com.nattype.tester` 区分，可与上游版本共存安装）
 
+## 内置公用 STUN 节点（实测可用）
+
+以下节点均经国内服务器实测能正常返回映射地址：
+
+| 节点 | 地址 | 实测结果 | RFC 5780 |
+|---|---|---|---|
+| 小米 | stun.miwifi.com:3478 | 正常，返回 RESPONSE-ORIGIN 与 OTHER-ADDRESS | ✅ 支持变更请求 |
+| 哔哩哔哩 | stun.chat.bilibili.com:3478 | 正常，仅返回映射地址 | ❌ |
+| 芒果TV | stun.hitv.com:3478 | 正常，仅返回映射地址 | ❌ |
+| 谷歌 | stun.l.google.com:19302 | 正常 | ❌ |
+| 谷歌备用 | stun1.l.google.com:19302 | 正常 | ❌ |
+| Cloudflare | stun.cloudflare.com:3478 | 正常 | ❌ |
+| Nextcloud | stun.nextcloud.com:443 | 正常（443 端口，适合封锁 3478 的网络） | ❌ |
+
+默认选中「小米」：它是这批公用节点中唯一支持 RFC 5780 变更请求的，能测出真实的过滤行为。
+其余节点只支持基础绑定请求，过滤行为一项会退化（日志中会提示服务器未支持变更请求）。
+
 ## 使用方法
 
 1. 打开 App，默认使用内置公共 STUN（小米 / Google / Cloudflare）

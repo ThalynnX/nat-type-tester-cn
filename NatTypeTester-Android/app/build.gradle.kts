@@ -19,8 +19,8 @@ android {
         applicationId = "cn.jiuyuewl.nattype"
         minSdk = 26
         targetSdk = 35
-        versionCode = 31
-        versionName = "1.1.31"
+        versionCode = 32
+        versionName = "1.1.32"
     }
 
     signingConfigs {
