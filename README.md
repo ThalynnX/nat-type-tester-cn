@@ -70,22 +70,25 @@ keyPassword=你的密码
    现在改为：服务器没认可变更请求时返回「过滤行为无法判定」；
    映射为端点无关时，综合结论显示「锥形 NAT（过滤未判定）」，不再谎报 NAT 类型。
 
-## 内置公用 STUN 节点（实测可用）
+## 内置公用 STUN 节点（11 个，均为实测可用）
 
-以下节点均经国内服务器实测能正常返回映射地址：
-
-| 节点 | 地址 | 实测结果 | RFC 5780 |
+| 节点 | 地址 | 实测 RTT | OTHER-ADDRESS |
 |---|---|---|---|
-| 小米 | stun.miwifi.com:3478 | 正常，返回 RESPONSE-ORIGIN 与 OTHER-ADDRESS | ✅ 支持变更请求 |
-| 哔哩哔哩 | stun.chat.bilibili.com:3478 | 正常，仅返回映射地址 | ❌ |
-| 芒果TV | stun.hitv.com:3478 | 正常，仅返回映射地址 | ❌ |
-| 谷歌 | stun.l.google.com:19302 | 正常 | ❌ |
-| 谷歌备用 | stun1.l.google.com:19302 | 正常 | ❌ |
-| Cloudflare | stun.cloudflare.com:3478 | 正常 | ❌ |
-| Nextcloud | stun.nextcloud.com:443 | 正常（443 端口，适合封锁 3478 的网络） | ❌ |
+| 小米 | stun.miwifi.com:3478 | 24ms | 有 |
+| 哔哩哔哩 | stun.chat.bilibili.com:3478 | 14ms | 无 |
+| 芒果TV | stun.hitv.com:3478 | 24ms | 无 |
+| 斗鱼 | stun.douyucdn.cn:18000 | 21ms | 有（内网地址，不可直连） |
+| 谷歌 | stun.l.google.com:19302 | 163ms | 无 |
+| 谷歌3 | stun3.l.google.com:19302 | 177ms | 无 |
+| 谷歌4 | stun4.l.google.com:19302 | 351ms | 无 |
+| Cloudflare | stun.cloudflare.com:3478 | 145ms | 无 |
+| Nextcloud 443 | stun.nextcloud.com:443 | 178ms | 有（同 IP 的 3478） |
+| Nextcloud 3478 | stun.nextcloud.com:3478 | 190ms | 有（同 IP 的 443） |
+| Linphone | stun.linphone.org:3478 | 196ms | 无 |
 
-默认选中「小米」：它是这批公用节点中唯一支持 RFC 5780 变更请求的，能测出真实的过滤行为。
-其余节点只支持基础绑定请求，过滤行为一项会退化（日志中会提示服务器未支持变更请求）。
+默认选中「小米」。国内线路优先：小米 / 哔哩哔哩 / 芒果TV / 斗鱼四个 RTT 在 25ms 内，适合移动网络。
+国际节点（谷歌 / Cloudflare / Nextcloud / Linphone）在部分运营商链路下可能超时，可手动切换。
+另有「自定义服务器」入口，可填任意 host:port。
 
 ## 使用方法
 

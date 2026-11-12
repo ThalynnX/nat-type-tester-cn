@@ -44,10 +44,14 @@ data class StunServer(
             StunServer("stun.miwifi.com", 3478, "小米"),
             StunServer("stun.chat.bilibili.com", 3478, "哔哩哔哩"),
             StunServer("stun.hitv.com", 3478, "芒果TV"),
+            StunServer("stun.douyucdn.cn", 18000, "斗鱼"),
             StunServer("stun.l.google.com", 19302, "谷歌"),
-            StunServer("stun1.l.google.com", 19302, "谷歌备用"),
+            StunServer("stun3.l.google.com", 19302, "谷歌3"),
+            StunServer("stun4.l.google.com", 19302, "谷歌4"),
             StunServer("stun.cloudflare.com", 3478, "Cloudflare"),
-            StunServer("stun.nextcloud.com", 443, "Nextcloud"),
+            StunServer("stun.nextcloud.com", 443, "Nextcloud 443"),
+            StunServer("stun.nextcloud.com", 3478, "Nextcloud 3478"),
+            StunServer("stun.linphone.org", 3478, "Linphone"),
         )
 
         /**
